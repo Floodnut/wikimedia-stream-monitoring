@@ -1,9 +1,10 @@
-package org.wiki.eventhandler;
+package org.wiki.handler.event;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wiki.enums.StreamTopic;
 
 import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.MessageEvent;
@@ -14,10 +15,16 @@ public class WikimediaChangeHandler implements EventHandler {
 	private KafkaProducer<String, String> kafkaProducer;
 	private String topic;
 
+	public WikimediaChangeHandler(KafkaProducer<String, String> kafkaProducer, StreamTopic topic) {
+		this.kafkaProducer = kafkaProducer;
+		this.topic = topic.getTopic();
+	}
+
 	public WikimediaChangeHandler(KafkaProducer<String, String> kafkaProducer, String topic) {
 		this.kafkaProducer = kafkaProducer;
 		this.topic = topic;
 	}
+
 
 	@Override
 	public void onOpen() throws Exception {
@@ -34,8 +41,9 @@ public class WikimediaChangeHandler implements EventHandler {
 	 */
 	@Override
 	public void onMessage(String event, MessageEvent messageEvent) throws Exception {
-
-		this.kafkaProducer.send(new ProducerRecord<>(this.topic, messageEvent.getData()));
+		this.kafkaProducer.send(
+			new ProducerRecord<>(this.topic, messageEvent.getData())
+		);
 	}
 
 	@Override

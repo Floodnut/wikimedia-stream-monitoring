@@ -5,13 +5,16 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.wiki.eventhandler.WikimediaChangeHandler;
+import org.wiki.enums.StreamTopic;
+import org.wiki.handler.event.WikimediaChangeHandler;
 import org.wiki.producer.WikimediaChangesProducer;
 
 import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.EventSource;
 
 public class WikimediaStreamApplication {
+
+	private final static String URL = "https://stream.wikimedia.org/v2/stream/recentchange";
 
 	public static void main(String[] args) throws InterruptedException {
 
@@ -20,9 +23,9 @@ public class WikimediaStreamApplication {
 		/* 프로듀서 생성 */
 		KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(kafkaProperties);
 
-		EventHandler eventHandler = new WikimediaChangeHandler(kafkaProducer, WikimediaChangesProducer.getWikimediaStreamTopic());
-		String url = "https://stream.wikimedia.org/v2/stream/recentchange";
-		EventSource wikimediaEventSource = new EventSource.Builder(eventHandler, URI.create(url)).build();
+		EventHandler eventHandler = new WikimediaChangeHandler(kafkaProducer, StreamTopic.WIKIMEDIA_STREAM_TOPIC);
+
+		EventSource wikimediaEventSource = new EventSource.Builder(eventHandler, URI.create(URL)).build();
 
 		/* 별도 스레드로 동작 */
 		wikimediaEventSource.start();
